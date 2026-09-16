@@ -14,17 +14,18 @@ DB_PATH = "failover_demo.db"
 
 
 def save_turn(session_id: str, department: str, role: str, content: str,
-              provider_used: str = None, tokens_consumed: int = 0):
+              provider_used: str = None, tokens_consumed: int = 0,
+              failover_reason: str = None):
     """Appends one turn to the conversation_turns table."""
     connection = sqlite3.connect(DB_PATH)
     cursor = connection.cursor()
 
     cursor.execute("""
         INSERT INTO conversation_turns
-            (session_id, department, role, content, provider_used, tokens_consumed, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (session_id, department, role, content, provider_used, tokens_consumed, failover_reason, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        session_id, department, role, content, provider_used, tokens_consumed,
+        session_id, department, role, content, provider_used, tokens_consumed, failover_reason,
         datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ))
 
@@ -54,16 +55,11 @@ def get_turns(session_id: str) -> list[dict]:
 
 
 def get_full_session(session_id: str) -> list[dict]:
-    """
-    Returns all turns for a session with full detail (including which
-    provider generated each one) -- useful for the blog's own inspection
-    of what actually happened, not for feeding back into an API call.
-    """
     connection = sqlite3.connect(DB_PATH)
     cursor = connection.cursor()
 
     cursor.execute("""
-        SELECT turn_id, role, content, provider_used, tokens_consumed, created_at
+        SELECT turn_id, role, content, provider_used, tokens_consumed, failover_reason, created_at
         FROM conversation_turns
         WHERE session_id = ?
         ORDER BY turn_id ASC
@@ -75,7 +71,8 @@ def get_full_session(session_id: str) -> list[dict]:
     return [
         {
             "turn_id": r[0], "role": r[1], "content": r[2],
-            "provider_used": r[3], "tokens_consumed": r[4], "created_at": r[5],
+            "provider_used": r[3], "tokens_consumed": r[4],
+            "failover_reason": r[5], "created_at": r[6],
         }
         for r in rows
     ]

@@ -15,8 +15,6 @@ import sqlite3
 from api_clients import ask_claude, ask_gemini
 from conversation_store import DB_PATH
 
-# Illustrative demo budgets (tokens per department) -- these are a policy
-# choice for this demo, not a measured or industry-standard figure.
 DEPARTMENT_BUDGETS = {
     "HR": 2000,
     "Facility": 2000,
@@ -31,7 +29,6 @@ class SimulatedProviderFailure(Exception):
 
 
 def get_department_usage(department: str) -> int:
-    """Sums real tokens consumed by a department across all sessions so far."""
     connection = sqlite3.connect(DB_PATH)
     cursor = connection.cursor()
     cursor.execute("""
@@ -65,7 +62,7 @@ def ask_with_failover(session_id: str, department: str, preferred: str = "gemini
 
     if is_over_budget(department):
         print(f"[failover] {department} is over its token budget ({DEPARTMENT_BUDGETS.get(department)}). Skipping {preferred}, going straight to {other}.")
-        reply = ask_fn[other](session_id, department)
+        reply = ask_fn[other](session_id, department, failover_reason="budget_exceeded")
         return {"reply": reply, "provider_used": other, "failover_reason": "budget_exceeded"}
 
     try:
@@ -77,7 +74,7 @@ def ask_with_failover(session_id: str, department: str, preferred: str = "gemini
 
     except Exception as e:
         print(f"[failover] {preferred} failed ({e}). Falling back to {other}.")
-        reply = ask_fn[other](session_id, department)
+        reply = ask_fn[other](session_id, department, failover_reason=f"api_error: {e}")
         return {"reply": reply, "provider_used": other, "failover_reason": f"api_error: {e}"}
 
 

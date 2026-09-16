@@ -22,8 +22,7 @@ load_dotenv()
 anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-
-def ask_claude(session_id: str, department: str) -> str:
+def ask_claude(session_id: str, department: str, failover_reason: str = None) -> str:
     turns = get_turns(session_id)
     system_prompt, messages = to_claude_payload(turns)
 
@@ -38,12 +37,13 @@ def ask_claude(session_id: str, department: str) -> str:
     tokens_used = response.usage.input_tokens + response.usage.output_tokens
 
     save_turn(session_id, department, "assistant", reply_text,
-              provider_used="claude", tokens_consumed=tokens_used)
+              provider_used="claude", tokens_consumed=tokens_used,
+              failover_reason=failover_reason)
 
     return reply_text
 
 
-def ask_gemini(session_id: str, department: str) -> str:
+def ask_gemini(session_id: str, department: str, failover_reason: str = None) -> str:
     turns = get_turns(session_id)
     system_instruction, contents = to_gemini_payload(turns)
 
@@ -57,7 +57,8 @@ def ask_gemini(session_id: str, department: str) -> str:
     tokens_used = response.usage_metadata.total_token_count
 
     save_turn(session_id, department, "assistant", reply_text,
-              provider_used="gemini", tokens_consumed=tokens_used)
+              provider_used="gemini", tokens_consumed=tokens_used,
+              failover_reason=failover_reason)
 
     return reply_text
 
