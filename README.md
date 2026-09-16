@@ -33,6 +33,10 @@ pip install -r requirements.txt
 
 Create a `.env` file with:
 
+ANTHROPIC_API_KEY=your_actual_claude_key_here
+GEMINI_API_KEY=your_actual_gemini_key_here
+
+
 
 ## Usage
 
