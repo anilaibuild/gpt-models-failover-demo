@@ -46,7 +46,7 @@ def get_department_usage(department: str) -> int:
 def is_over_budget(department: str) -> bool:
     budget = DEPARTMENT_BUDGETS.get(department)
     if budget is None:
-        return False  # no configured budget = unlimited
+        return False
     return get_department_usage(department) >= budget
 
 
@@ -106,3 +106,16 @@ if __name__ == "__main__":
     print("--- Full stored session ---")
     for turn in get_full_session(session):
         print(turn)
+
+    print("\n\n=== Testing the budget-exhaustion trigger (separate department: HR) ===")
+    hr_session = f"failover-test-hr-{uuid.uuid4().hex[:8]}"
+
+    save_turn(hr_session, "HR", "system", "You are an HR policy assistant.")
+    save_turn(hr_session, "HR", "assistant", "[Simulated prior usage this month]",
+              provider_used="gemini", tokens_consumed=2100)
+
+    print(f"HR usage so far: {get_department_usage('HR')} / {DEPARTMENT_BUDGETS['HR']} budget")
+
+    save_turn(hr_session, "HR", "user", "Can you summarize our PTO policy in one sentence?")
+    result3 = ask_with_failover(hr_session, "HR", preferred="gemini")
+    print(result3)
