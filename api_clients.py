@@ -24,10 +24,6 @@ gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 
 def ask_claude(session_id: str, department: str) -> str:
-    """
-    Reads the current stored conversation, sends it to Claude, saves
-    Claude's reply back into the store, and returns the reply text.
-    """
     turns = get_turns(session_id)
     system_prompt, messages = to_claude_payload(turns)
 
@@ -48,10 +44,6 @@ def ask_claude(session_id: str, department: str) -> str:
 
 
 def ask_gemini(session_id: str, department: str) -> str:
-    """
-    Reads the current stored conversation, sends it to Gemini, saves
-    Gemini's reply back into the store, and returns the reply text.
-    """
     turns = get_turns(session_id)
     system_instruction, contents = to_gemini_payload(turns)
 
@@ -83,3 +75,7 @@ if __name__ == "__main__":
     reply = ask_gemini(test_session, department)
     print("Gemini replied:", reply)
 
+    print("\nAsking Claude (same session, continuing the conversation)...")
+    save_turn(test_session, department, "user", "Now also acknowledge that this applies to all regions.")
+    claude_reply = ask_claude(test_session, department)
+    print("Claude replied:", claude_reply)
