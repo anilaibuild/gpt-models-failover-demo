@@ -1,5 +1,7 @@
 # Cross-Provider Failover Demo
 
+![Architecture diagram](Diagram/failover-architecture.png)
+
 A working demonstration that a multi-turn conversation can automatically fail over from one AI provider to another mid-conversation, without losing context — because Claude's and Gemini's APIs are both stateless, the conversation was never stored on their servers to begin with. It only ever lived in one place: this project's own database.
 
 Full writeup: *[link to be added once published]*
